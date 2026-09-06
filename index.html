@@ -3,63 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tiffin POS & Tokens</title>
+  <title>Tiffin POS</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#b91c1c" />
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
-    body { background: #f3f4f6; padding: 12px; padding-bottom: 110px; }
-    header { background: #b91c1c; color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    body { background: #f3f4f6; padding: 12px; padding-bottom: 120px; }
+    
+    header { background: #b91c1c; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .token-badge { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
-    .nav-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-    .nav-tabs button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; background: #e5e7eb; color: #374151; }
+    
+    .printer-status { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; background: #e5e7eb; color: #374151; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; cursor: pointer; }
+    .printer-dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+    .printer-dot.connected { background: #16a34a; }
+
+    .nav-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .nav-tabs button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; background: #e5e7eb; color: #374151; font-size: 0.85rem; }
     .nav-tabs button.active { background: #b91c1c; color: white; }
+
+    /* POS Item Grid with Images */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-    .card { background: white; border-radius: 8px; padding: 12px; text-align: center; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .card h4 { font-size: 1rem; color: #1f2937; }
-    .card .price { color: #047857; font-weight: bold; margin: 4px 0 8px; }
+    .card { background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+    .card-img-container { width: 100%; height: 105px; background: #f1f5f9; overflow: hidden; position: relative; }
+    .card-img { width: 100%; height: 100%; object-fit: cover; }
+    .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+    .card h4 { font-size: 0.95rem; color: #1f2937; margin-bottom: 2px; }
+    .card .price { color: #047857; font-weight: bold; margin-bottom: 8px; font-size: 0.95rem; }
+    
     .controls { display: flex; justify-content: center; align-items: center; gap: 8px; }
-    .btn-qty { width: 30px; height: 30px; background: #e5e7eb; border: none; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-    .checkout-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #e5e7eb; padding: 10px 16px; box-shadow: 0 -3px 8px rgba(0,0,0,0.08); }
+    .btn-qty { width: 32px; height: 32px; background: #e5e7eb; border: none; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+    
+    /* Bottom Checkout Bar */
+    .checkout-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #e5e7eb; padding: 10px 16px; box-shadow: 0 -3px 8px rgba(0,0,0,0.08); z-index: 50; }
     .total-row { display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: bold; margin-bottom: 8px; }
     .actions { display: flex; gap: 8px; }
     .btn-pay { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 700; color: white; cursor: pointer; }
     .btn-cash { background: #16a34a; }
     .btn-upi { background: #2563eb; }
+
+    /* Modal / Token Slip */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 16px; z-index: 99; }
     .slip { background: white; width: 100%; max-width: 320px; padding: 20px; border-radius: 10px; text-align: center; }
-    .slip .t-num { font-size: 2.8rem; font-weight: 900; color: #b91c1c; margin: 10px 0; }
+    .slip .t-num { font-size: 2.8rem; font-weight: 900; color: #b91c1c; margin: 6px 0; }
     .slip-details { text-align: left; border-top: 1px dashed #9ca3af; border-bottom: 1px dashed #9ca3af; padding: 8px 0; margin: 10px 0; font-size: 0.85rem; }
+
+    /* Manage Tab UI */
+    .section-card { background: white; border-radius: 8px; padding: 14px; border: 1px solid #e5e7eb; margin-bottom: 14px; }
+    .section-card h3 { font-size: 1rem; margin-bottom: 10px; color: #111827; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .form-group input { padding: 9px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; }
+    .btn-primary { background: #b91c1c; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .btn-dark { background: #374151; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
+
+    .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+    .item-list-row img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; }
+    .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
     .metric { background: white; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #e5e7eb; }
     .metric span { display: block; font-size: 0.75rem; color: #6b7280; }
     .metric strong { font-size: 1.05rem; color: #111827; }
-    .table-container { background: white; border-radius: 6px; border: 1px solid #e5e7eb; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f3f4f6; }
     th { background: #f9fafb; font-weight: 600; }
-    .btn-export { background: #374151; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; margin-top: 12px; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <header>
     <div>
-      <strong style="font-size: 1.1rem;">Sri Tiffin POS</strong>
+      <strong style="font-size: 1.1rem;" id="display-shop-name">Sri Tiffin Center</strong>
     </div>
     <div class="token-badge">Next: #<span id="next-token-id">1</span></div>
   </header>
 
-  <div class="nav-tabs">
-    <button id="tab-billing" class="active" onclick="switchView('billing')">Order POS</button>
-    <button id="tab-sales" onclick="switchView('sales')">Daily Sales</button>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="printer-status" onclick="connectPrinter()">
+      <span class="printer-dot" id="printer-dot"></span>
+      <span id="printer-label">Bluetooth Printer: Connect</span>
+    </div>
   </div>
 
+  <div class="nav-tabs">
+    <button id="tab-billing" class="active" onclick="switchView('billing')">POS</button>
+    <button id="tab-sales" onclick="switchView('sales')">Sales</button>
+    <button id="tab-manage" onclick="switchView('manage')">Manage Menu</button>
+  </div>
+
+  <!-- 1. POS BILLING VIEW -->
   <div id="view-billing">
     <div class="menu-grid" id="menu-container"></div>
     <div class="checkout-panel">
       <div class="total-row">
-        <span>Total Payable:</span>
+        <span>Total:</span>
         <span>₹<span id="pos-total">0</span></span>
       </div>
       <div class="actions">
@@ -69,6 +105,7 @@
     </div>
   </div>
 
+  <!-- 2. DAILY SALES REGISTER VIEW -->
   <div id="view-sales" style="display: none;">
     <div class="sales-summary">
       <div class="metric"><span>Tokens</span><strong id="stat-tokens">0</strong></div>
@@ -76,59 +113,129 @@
       <div class="metric"><span>Total (₹)</span><strong id="stat-total">0</strong></div>
     </div>
 
-    <div class="table-container">
+    <div style="background: white; border-radius: 6px; border: 1px solid #e5e7eb; overflow: hidden;">
       <table>
         <thead>
-          <tr>
-            <th>Token</th>
-            <th>Items</th>
-            <th>Pay</th>
-            <th>₹</th>
-          </tr>
+          <tr><th>Token</th><th>Items</th><th>Pay</th><th>₹</th></tr>
         </thead>
         <tbody id="sales-rows"></tbody>
       </table>
     </div>
 
-    <button class="btn-export" onclick="exportToCSV()">Download Sales (CSV)</button>
-    <button class="btn-export" style="background: #991b1b; margin-top: 6px;" onclick="resetDay()">Reset for New Day</button>
+    <button class="btn-dark" style="margin-top: 12px;" onclick="exportToCSV()">Download Sales (CSV)</button>
+    <button class="btn-dark" style="background: #991b1b; margin-top: 6px;" onclick="resetDay()">Reset for New Day</button>
   </div>
 
+  <!-- 3. MANAGE SHOP & MENU VIEW -->
+  <div id="view-manage" style="display: none;">
+    <div class="section-card">
+      <h3>Shop Details</h3>
+      <div class="form-group" style="flex-direction: row;">
+        <input type="text" id="input-shop-name" placeholder="Enter Tiffin Center Name" style="flex:1;" />
+        <button class="btn-primary" onclick="updateShopName()">Save Name</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h3>Add New Item</h3>
+      <div class="form-group">
+        <input type="text" id="new-item-name" placeholder="Item Name (e.g., Mysore Bonda)" />
+        <input type="number" id="new-item-price" placeholder="Price (₹)" />
+        <label style="font-size: 0.8rem; color: #4b5563;">Upload Photo (optional):</label>
+        <input type="file" id="new-item-file" accept="image/*" />
+        <button class="btn-primary" style="margin-top: 4px;" onclick="addItem()">Add to Menu</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3>Current Menu Items</h3>
+        <button onclick="restoreDefaultImages()" style="font-size: 0.75rem; background: #e5e7eb; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Reset Default Photos</button>
+      </div>
+      <div id="manage-menu-list"></div>
+    </div>
+  </div>
+
+  <!-- TOKEN POPUP -->
   <div class="modal" id="token-modal">
     <div class="slip">
-      <h3>TOKEN</h3>
+      <h4 id="slip-shop-title">Sri Tiffin Center</h4>
       <div class="t-num" id="print-token">#0</div>
       <div class="slip-details" id="print-summary"></div>
-      <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 12px;">Total: ₹<span id="print-total">0</span></p>
+      <p style="font-size: 1rem; font-weight: bold; margin-bottom: 12px;">Total: ₹<span id="print-total">0</span></p>
       <button class="btn-pay btn-cash" style="width: 100%;" onclick="closeModal()">Next Order</button>
     </div>
   </div>
 
   <script>
-    const menu = [
-      { id: 1, name: "Idli (4)", price: 40 },
-      { id: 2, name: "Wada (2)", price: 45 },
-      { id: 3, name: "Masala Dosa", price: 55 },
-      { id: 4, name: "Plain Dosa", price: 45 },
-      { id: 5, name: "Poori (2)", price: 50 },
-      { id: 6, name: "Tea / Coffee", price: 15 }
+    const DEFAULT_MENU = [
+      { 
+        id: 1, 
+        name: "Idli (4)", 
+        price: 40, 
+        image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=80" 
+      },
+      { 
+        id: 2, 
+        name: "Wada (2)", 
+        price: 45, 
+        image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=400&auto=format&fit=crop&q=80" 
+      },
+      { 
+        id: 3, 
+        name: "Masala Dosa", 
+        price: 55, 
+        image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400&auto=format&fit=crop&q=80" 
+      },
+      { 
+        id: 4, 
+        name: "Plain Dosa", 
+        price: 45, 
+        image: "https://images.unsplash.com/photo-1694605929668-cb0a4c281358?w=400&auto=format&fit=crop&q=80" 
+      },
+      { 
+        id: 5, 
+        name: "Poori (2)", 
+        price: 50, 
+        image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&auto=format&fit=crop&q=80" 
+      },
+      { 
+        id: 6, 
+        name: "Filter Coffee", 
+        price: 20, 
+        image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=80" 
+      }
     ];
 
-    let cart = {};
-    let sales = JSON.parse(localStorage.getItem("pos_sales") || "[]");
+    let shopName = localStorage.getItem("pos_shop_name") || "Sri Tiffin Center";
+    let menu = JSON.parse(localStorage.getItem("pos_menu")) || DEFAULT_MENU;
+    let sales = JSON.parse(localStorage.getItem("pos_sales")) || [];
     let currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
+    let cart = {};
+    let printCharacteristic = null;
 
     function init() {
+      document.getElementById("display-shop-name").innerText = shopName;
+      document.getElementById("input-shop-name").value = shopName;
       document.getElementById("next-token-id").innerText = currentToken;
+      renderPOSGrid();
+    }
+
+    function renderPOSGrid() {
       const grid = document.getElementById("menu-container");
       grid.innerHTML = menu.map(m => `
         <div class="card">
-          <h4>${m.name}</h4>
-          <div class="price">₹${m.price}</div>
-          <div class="controls">
-            <button class="btn-qty" onclick="changeQty(${m.id}, -1)">-</button>
-            <strong id="qty-${m.id}">0</strong>
-            <button class="btn-qty" onclick="changeQty(${m.id}, 1)">+</button>
+          <div class="card-img-container">
+            <img class="card-img" src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
+          </div>
+          <div class="card-body">
+            <h4>${m.name}</h4>
+            <div class="price">₹${m.price}</div>
+            <div class="controls">
+              <button class="btn-qty" onclick="changeQty(${m.id}, -1)">-</button>
+              <strong id="qty-${m.id}">${cart[m.id] || 0}</strong>
+              <button class="btn-qty" onclick="changeQty(${m.id}, 1)">+</button>
+            </div>
           </div>
         </div>
       `).join('');
@@ -140,17 +247,88 @@
       let total = 0;
       for (let itemId in cart) {
         const item = menu.find(m => m.id == itemId);
-        total += cart[itemId] * item.price;
+        if (item) total += cart[itemId] * item.price;
       }
       document.getElementById("pos-total").innerText = total;
     }
 
-    function generateToken(mode) {
-      const selected = menu.filter(m => cart[m.id] > 0);
-      if (!selected.length) {
-        alert("Cart is empty!");
-        return;
+    function updateShopName() {
+      const val = document.getElementById("input-shop-name").value.trim();
+      if (!val) return;
+      shopName = val;
+      localStorage.setItem("pos_shop_name", shopName);
+      document.getElementById("display-shop-name").innerText = shopName;
+      alert("Shop name updated!");
+    }
+
+    function addItem() {
+      const name = document.getElementById("new-item-name").value.trim();
+      const price = parseInt(document.getElementById("new-item-price").value, 10);
+      const fileInput = document.getElementById("new-item-file");
+      
+      if (!name || isNaN(price) || price <= 0) return alert("Enter a valid name and price.");
+
+      const saveItem = (imageData) => {
+        menu.push({ 
+          id: Date.now(), 
+          name, 
+          price, 
+          image: imageData || 'https://placehold.co/400x300?text=Tiffin' 
+        });
+        localStorage.setItem("pos_menu", JSON.stringify(menu));
+        document.getElementById("new-item-name").value = "";
+        document.getElementById("new-item-price").value = "";
+        fileInput.value = "";
+        renderPOSGrid();
+        renderManageMenu();
+      };
+
+      // Read uploaded image as base64 data URL
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => saveItem(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveItem(null);
       }
+    }
+
+    function deleteItem(id) {
+      menu = menu.filter(m => m.id !== id);
+      delete cart[id];
+      localStorage.setItem("pos_menu", JSON.stringify(menu));
+      renderPOSGrid();
+      renderManageMenu();
+    }
+
+    function restoreDefaultImages() {
+      if (confirm("Reset menu to original items with South Indian tiffin photos?")) {
+        menu = DEFAULT_MENU;
+        localStorage.setItem("pos_menu", JSON.stringify(menu));
+        renderPOSGrid();
+        renderManageMenu();
+      }
+    }
+
+    function renderManageMenu() {
+      const list = document.getElementById("manage-menu-list");
+      list.innerHTML = menu.map(m => `
+        <div class="item-list-row">
+          <div style="display:flex; align-items:center;">
+            <img src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
+            <div>
+              <strong>${m.name}</strong><br>
+              <small style="color:#047857; font-weight:bold;">₹${m.price}</small>
+            </div>
+          </div>
+          <button class="btn-delete" onclick="deleteItem(${m.id})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    async function generateToken(mode) {
+      const selected = menu.filter(m => (cart[m.id] || 0) > 0);
+      if (!selected.length) return alert("Cart is empty!");
 
       const total = parseInt(document.getElementById("pos-total").innerText, 10);
       const itemsPurchased = selected.map(m => `${m.name} x${cart[m.id]}`);
@@ -166,17 +344,25 @@
       sales.push(record);
       localStorage.setItem("pos_sales", JSON.stringify(sales));
 
+      document.getElementById("slip-shop-title").innerText = shopName;
       document.getElementById("print-token").innerText = `#${currentToken}`;
       document.getElementById("print-summary").innerHTML = selected.map(m => `<div>${m.name} x ${cart[m.id]} - ₹${m.price * cart[m.id]}</div>`).join('');
       document.getElementById("print-total").innerText = total;
       document.getElementById("token-modal").style.display = "flex";
+
+      if (printCharacteristic) {
+        printThermalSlip(record, selected);
+      }
 
       currentToken++;
       localStorage.setItem("pos_token", currentToken);
       document.getElementById("next-token-id").innerText = currentToken;
 
       cart = {};
-      menu.forEach(m => document.getElementById(`qty-${m.id}`).innerText = "0");
+      menu.forEach(m => {
+        const el = document.getElementById(`qty-${m.id}`);
+        if (el) el.innerText = "0";
+      });
       document.getElementById("pos-total").innerText = "0";
     }
 
@@ -185,12 +371,16 @@
     }
 
     function switchView(tab) {
-      const isPOS = tab === 'billing';
-      document.getElementById("view-billing").style.display = isPOS ? 'block' : 'none';
-      document.getElementById("view-sales").style.display = isPOS ? 'none' : 'block';
-      document.getElementById("tab-billing").className = isPOS ? 'active' : '';
-      document.getElementById("tab-sales").className = !isPOS ? 'active' : '';
-      if (!isPOS) renderSales();
+      document.getElementById("view-billing").style.display = tab === 'billing' ? 'block' : 'none';
+      document.getElementById("view-sales").style.display = tab === 'sales' ? 'block' : 'none';
+      document.getElementById("view-manage").style.display = tab === 'manage' ? 'block' : 'none';
+
+      document.getElementById("tab-billing").className = tab === 'billing' ? 'active' : '';
+      document.getElementById("tab-sales").className = tab === 'sales' ? 'active' : '';
+      document.getElementById("tab-manage").className = tab === 'manage' ? 'active' : '';
+
+      if (tab === 'sales') renderSales();
+      if (tab === 'manage') renderManageMenu();
     }
 
     function renderSales() {
@@ -226,13 +416,87 @@
     }
 
     function resetDay() {
-      if (confirm("Reset token counter to 1 and clear today's records? Make sure to download the CSV first.")) {
+      if (confirm("Reset token counter to 1 and clear records? Ensure you download the CSV first.")) {
         sales = [];
         currentToken = 1;
         localStorage.removeItem("pos_sales");
         localStorage.setItem("pos_token", "1");
         document.getElementById("next-token-id").innerText = "1";
         renderSales();
+      }
+    }
+
+    async function connectPrinter() {
+      if (!navigator.bluetooth) {
+        return alert("Web Bluetooth requires Google Chrome on Android.");
+      }
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [
+            "000018f0-0000-1000-8000-00805f9b34fb",
+            "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+            "49535343-fe7d-4ae5-8fa9-9fafd205e455"
+          ]
+        });
+
+        const server = await device.gatt.connect();
+        const services = await server.getPrimaryServices();
+        
+        for (const service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (const char of characteristics) {
+            if (char.properties.write || char.properties.writeWithoutResponse) {
+              printCharacteristic = char;
+              break;
+            }
+          }
+          if (printCharacteristic) break;
+        }
+
+        if (printCharacteristic) {
+          document.getElementById("printer-dot").classList.add("connected");
+          document.getElementById("printer-label").innerText = `Printer: ${device.name || "Connected"}`;
+        }
+      } catch (err) {
+        alert("Printer error: " + err.message);
+      }
+    }
+
+    async function printThermalSlip(record, selectedItems) {
+      try {
+        const encoder = new TextEncoder();
+        const ESC = "\x1B";
+        const GS = "\x1D";
+
+        let receipt = ESC + "@";
+        receipt += ESC + "a" + "\x01";
+        receipt += shopName + "\n";
+        receipt += GS + "!" + "\x11";
+        receipt += `TOKEN #${record.token}\n`;
+        receipt += GS + "!" + "\x00";
+        receipt += `${record.time} | Mode: ${record.mode}\n`;
+        receipt += "--------------------------------\n";
+        receipt += ESC + "a" + "\x00";
+
+        selectedItems.forEach(item => {
+          const qty = cart[item.id];
+          const line = `${item.name} x${qty}`;
+          const amt = `Rs.${item.price * qty}`;
+          const spaceCount = Math.max(1, 32 - (line.length + amt.length));
+          receipt += line + " ".repeat(spaceCount) + amt + "\n";
+        });
+
+        receipt += "--------------------------------\n";
+        receipt += ESC + "a" + "\x02";
+        receipt += `TOTAL: Rs.${record.total}\n\n`;
+        receipt += ESC + "a" + "\x01";
+        receipt += "Thank You! Visit Again\n\n\n\n";
+
+        const data = encoder.encode(receipt);
+        await printCharacteristic.writeValue(data);
+      } catch (err) {
+        console.error("Print error:", err);
       }
     }
 
