@@ -20,6 +20,7 @@
       enableIndexedDbPersistence 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+    // Your exact Firebase project keys
     const firebaseConfig = {
       apiKey: "AIzaSyCbWLR1ySNI89vGNc12FFFpM954406f0901",
       authDomain: "tiffin-counter-3c051.firebaseapp.com",
@@ -28,7 +29,7 @@
       messagingSenderId: "1069700586665",
       appId: "1:1069700586665:web:954406f0901aab22e71db8"
     };
-    
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -96,7 +97,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Status Strip */
+    /* Status Strip (Cloud + Printer) */
     .status-strip {
       display: flex;
       justify-content: space-between;
@@ -315,50 +316,43 @@
     .item-list-row img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
     .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 
-    /* Thermal Receipt Paper Modal & Jagged Bottom */
+    /* Modal Slip */
     .modal { 
       display: none; 
       position: fixed; 
       inset: 0; 
-      background: rgba(0,0,0,0.8); 
-      backdrop-filter: blur(14px);
+      background: rgba(0,0,0,0.75); 
+      backdrop-filter: blur(12px);
       align-items: center; 
       justify-content: center; 
       padding: 16px; 
       z-index: 99; 
     }
-    .receipt-paper { 
-      background: #fafafa; 
+    .slip { 
+      background: #ffffff; 
       color: #111827; 
       width: 100%; 
       max-width: 320px; 
-      padding: 22px 16px 18px 16px; 
-      border-radius: 4px; 
-      font-family: "Courier New", Courier, monospace;
-      font-size: 0.85rem;
-      line-height: 1.35;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-      position: relative;
+      padding: 24px; 
+      border-radius: 20px; 
+      text-align: center; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .receipt-paper::after {
-      content: "";
-      position: absolute;
-      bottom: -10px;
-      left: 0;
-      right: 0;
-      height: 10px;
-      background: linear-gradient(135deg, transparent 5px, #fafafa 5px) 0 0,
-                  linear-gradient(-135deg, transparent 5px, #fafafa 5px) 0 0;
-      background-size: 10px 10px;
-      background-repeat: repeat-x;
+    .slip .t-num { 
+      font-size: 3.2rem; 
+      font-weight: 900; 
+      color: #dc2626; 
+      margin: 8px 0; 
     }
-    .receipt-center { text-align: center; }
-    .receipt-bold { font-weight: 900; }
-    .receipt-divider { border-top: 1px dashed #6b7280; margin: 8px 0; }
-    .receipt-row { display: flex; justify-content: space-between; }
-    .receipt-col-name { width: 44%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
-    .receipt-col-qty { width: 30%; text-align: center; }
-    .receipt-col-total { width: 26%; text-align: right; }
+    .slip-details { 
+      text-align: left; 
+      border-top: 2px dashed #d1d5db; 
+      border-bottom: 2px dashed #d1d5db; 
+      padding: 12px 0; 
+      margin: 12px 0; 
+      font-size: 1.05rem; 
+      font-weight: 600;
+    }
 
     /* Sales Register */
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -486,25 +480,14 @@
     </div>
   </div>
 
-  <!-- THERMAL RECEIPT PREVIEW MODAL -->
+  <!-- TOKEN POPUP -->
   <div class="modal" id="token-modal">
-    <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px;">
-      
-      <!-- Realistic Thermal Paper Preview -->
-      <div class="receipt-paper" id="receipt-preview-content">
-        <!-- Rendered dynamically -->
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <button class="btn-pay btn-cash" style="padding: 12px; font-size: 1rem;" onclick="reprintCurrentToken()">
-          🖨️ Print Slip
-        </button>
-        <button class="btn-pay" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 12px; font-size: 1rem;" onclick="closeModal()">
-          Next Order
-        </button>
-      </div>
-
+    <div class="slip">
+      <h3 style="font-size: 1.2rem; color: #4b5563;" id="slip-shop-title">Sri Tiffin Center</h3>
+      <div class="t-num" id="print-token">#0</div>
+      <div class="slip-details" id="print-summary"></div>
+      <p style="font-size: 1.25rem; font-weight: 900; margin-bottom: 16px;">Total: ₹<span id="print-total">0</span></p>
+      <button class="btn-pay btn-cash" style="width: 100%; font-size: 1.15rem;" onclick="closeModal()">Next Order</button>
     </div>
   </div>
 
@@ -524,9 +507,6 @@
     let currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
     let cart = {};
     let printCharacteristic = null;
-
-    let lastOrderRecord = null;
-    let lastOrderItems = null;
 
     function init() {
       document.getElementById("display-shop-name").innerText = shopName;
@@ -579,4 +559,32 @@
     function addItem() {
       const name = document.getElementById("new-item-name").value.trim();
       const price = parseInt(document.getElementById("new-item-price").value, 10);
-    
+      const fileInput = document.getElementById("new-item-file");
+      
+      if (!name || isNaN(price) || price <= 0) return alert("Enter valid item name and price.");
+
+      const saveItem = (imageData) => {
+        menu.push({ 
+          id: Date.now(), 
+          name, 
+          price, 
+          image: imageData || 'https://placehold.co/400x300?text=Tiffin' 
+        });
+        localStorage.setItem("pos_menu", JSON.stringify(menu));
+        document.getElementById("new-item-name").value = "";
+        document.getElementById("new-item-price").value = "";
+        fileInput.value = "";
+        renderPOSGrid();
+        renderManageMenu();
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => saveItem(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveItem(null);
+      }
+    }
+
+    function deleteIte
