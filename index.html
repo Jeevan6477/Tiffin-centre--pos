@@ -7,17 +7,14 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#991b1b" />
 
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
     * { 
       box-sizing: border-box; 
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
       margin: 0; 
       padding: 0; 
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body { 
@@ -26,7 +23,6 @@
       padding: 12px; 
       padding-bottom: 140px; 
       min-height: 100vh;
-      position: relative;
     }
 
     header { 
@@ -51,7 +47,6 @@
       font-size: 1rem; 
     }
 
-    /* Status Bar */
     .status-strip {
       display: flex;
       justify-content: space-between;
@@ -72,10 +67,8 @@
       color: #e5e7eb;
       cursor: pointer;
     }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
-    .status-dot.live { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
 
-    /* Nav Tabs */
     .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .nav-tabs button { 
       flex: 1; 
@@ -95,7 +88,6 @@
       box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
     }
 
-    /* Menu Cards */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
     .card { 
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
@@ -126,10 +118,9 @@
       align-items: center;
       justify-content: center;
     }
-    .btn-qty:active { transform: scale(0.92); }
+    .btn-qty:active { transform: scale(0.92); background: rgba(255,255,255,0.4); }
     .qty-number { font-size: 1.35rem; font-weight: 900; min-width: 24px; color: #ffffff; }
 
-    /* Checkout Bar */
     .checkout-panel { 
       position: fixed; 
       bottom: 0; left: 0; right: 0; 
@@ -147,7 +138,6 @@
     .btn-cash { background: #16a34a; }
     .btn-upi { background: #2563eb; }
 
-    /* Manage Menu Settings */
     .section-card { 
       background: rgba(255, 255, 255, 0.08); 
       border-radius: 14px; 
@@ -163,8 +153,8 @@
     .item-list-row img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
     .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    /* Modal - Strictly Hidden by Default */
-    .modal-backdrop { 
+    /* Modal - Zero Display When Inactive */
+    #token-modal { 
       display: none; 
       position: fixed; 
       inset: 0; 
@@ -172,10 +162,7 @@
       align-items: center; 
       justify-content: center; 
       padding: 16px; 
-      z-index: 1000; 
-    }
-    .modal-backdrop.open {
-      display: flex !important;
+      z-index: 9999; 
     }
     .receipt-paper { 
       background: #fafafa; 
@@ -209,7 +196,6 @@
     .receipt-col-qty { width: 30%; text-align: center; }
     .receipt-col-total { width: 26%; text-align: right; }
 
-    /* Sales View */
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .metric { background: rgba(255, 255, 255, 0.08); padding: 12px 6px; border-radius: 12px; text-align: center; }
     .metric span { display: block; font-size: 0.9rem; color: #9ca3af; margin-bottom: 4px; }
@@ -229,12 +215,12 @@
   </header>
 
   <div class="status-strip">
-    <div class="status-pill" onclick="alert(db ? 'Cloud is connected and active!' : 'Running in Offline Storage mode')">
-      <span class="status-dot" id="cloud-dot"></span>
-      <span id="cloud-label">Cloud: Local</span>
+    <div class="status-pill" onclick="alert('POS is actively saving to device storage.')">
+      <span class="status-dot"></span>
+      <span>Storage: Active</span>
     </div>
     <div class="status-pill" onclick="connectPrinter()">
-      <span class="status-dot" id="printer-dot"></span>
+      <span class="status-dot" id="printer-dot" style="background:#9ca3af;box-shadow:none;"></span>
       <span id="printer-label">Printer: Connect</span>
     </div>
   </div>
@@ -312,7 +298,7 @@
   </div>
 
   <!-- THERMAL RECEIPT MODAL PREVIEW -->
-  <div class="modal-backdrop" id="token-modal" onclick="closeModalOnBackdrop(event)">
+  <div id="token-modal" onclick="closeModal()">
     <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px;" onclick="event.stopPropagation()">
       <div class="receipt-paper" id="receipt-preview-content"></div>
       <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -342,63 +328,14 @@
     let currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
     let cart = {};
     let printCharacteristic = null;
-    let db = null;
     let lastOrderRecord = null;
     let lastOrderItems = null;
 
-    function init() {
-      document.getElementById("display-shop-name").innerText = shopName;
-      document.getElementById("input-shop-name").value = shopName;
-      document.getElementById("next-token-id").innerText = currentToken;
-      renderPOSGrid();
-      setupFirebase();
-    }
-
-    function setupFirebase() {
-      try {
-        if (typeof firebase !== 'undefined') {
-          const firebaseConfig = {
-            projectId: "tiffin-counter-3c051",
-            authDomain: "tiffin-counter-3c051.firebaseapp.com",
-            storageBucket: "tiffin-counter-3c051.appspot.com",
-            messagingSenderId: "1069700586665",
-            appId: "1:1069700586665:web:954406f0901aab22e71db8"
-          };
-
-          if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-          }
-          db = firebase.firestore();
-
-          document.getElementById("cloud-dot").classList.add("live");
-          document.getElementById("cloud-label").innerText = "Cloud: Ready";
-
-          const today = new Date().toISOString().slice(0, 10);
-          db.collection("orders").onSnapshot(snap => {
-            let cloudOrders = [];
-            snap.forEach(doc => {
-              const d = doc.data();
-              if (d.isoDate === today || d.date === today) cloudOrders.push(d);
-            });
-            if (cloudOrders.length > 0) {
-              localSales = cloudOrders;
-              localStorage.setItem("pos_sales", JSON.stringify(localSales));
-              const maxT = Math.max(...cloudOrders.map(o => o.token || 0));
-              if (maxT >= currentToken) {
-                currentToken = maxT + 1;
-                localStorage.setItem("pos_token", currentToken);
-                document.getElementById("next-token-id").innerText = currentToken;
-              }
-              renderSalesTable();
-            }
-          }, err => {
-            console.warn("Firestore permissions note:", err.message);
-          });
-        }
-      } catch (err) {
-        console.warn("Firebase offline note:", err);
-      }
-    }
+    // Direct synchronous render - will NEVER get stuck on blank screen
+    document.getElementById("display-shop-name").innerText = shopName;
+    document.getElementById("input-shop-name").value = shopName;
+    document.getElementById("next-token-id").innerText = currentToken;
+    renderPOSGrid();
 
     function renderPOSGrid() {
       const grid = document.getElementById("menu-container");
@@ -486,4 +423,68 @@
 
     function renderManageMenu() {
       const list = document.getElementById("manage-menu-list");
-      list.innerHTML = menu
+      list.innerHTML = menu.map(m => `
+        <div class="item-list-row">
+          <div style="display:flex; align-items:center;">
+            <img src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
+            <div>
+              <strong>${m.name}</strong><br>
+              <small style="color:#4ade80; font-weight:bold;">₹${m.price}</small>
+            </div>
+          </div>
+          <button class="btn-delete" onclick="deleteItem(${m.id})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function generateToken(mode) {
+      const selected = menu.filter(m => (cart[m.id] || 0) > 0);
+      if (!selected.length) return alert("Please select at least one item.");
+
+      const total = parseInt(document.getElementById("pos-total").innerText, 10);
+      const itemsPurchased = selected.map(m => `${m.name} x${cart[m.id]}`);
+      const todayFormatted = new Date().toLocaleDateString('en-GB');
+
+      const record = {
+        token: currentToken,
+        isoDate: new Date().toISOString().slice(0, 10),
+        date: todayFormatted,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now(),
+        items: itemsPurchased.join(", "),
+        total: total,
+        mode: mode
+      };
+
+      localSales.push(record);
+      localStorage.setItem("pos_sales", JSON.stringify(localSales));
+
+      lastOrderRecord = record;
+      lastOrderItems = selected.map(m => ({
+        name: m.name,
+        qty: cart[m.id],
+        price: m.price,
+        subTotal: m.price * cart[m.id]
+      }));
+
+      // Render accurate in-app paper receipt preview
+      renderReceiptPreview(record, lastOrderItems);
+      document.getElementById("token-modal").style.display = "flex";
+
+      if (printCharacteristic) {
+        printThermalSlip(record, lastOrderItems);
+      }
+
+      currentToken++;
+      localStorage.setItem("pos_token", currentToken);
+      document.getElementById("next-token-id").innerText = currentToken;
+
+      cart = {};
+      menu.forEach(m => {
+        const el = document.getElementById(`qty-${m.id}`);
+        if (el) el.innerText = "0";
+      });
+      document.getElementById("pos-total").innerText = "0";
+    }
+
+    
