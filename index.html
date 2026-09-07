@@ -20,7 +20,6 @@
       enableIndexedDbPersistence 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // Your exact Firebase project keys
     const firebaseConfig = {
       apiKey: "AIzaSyCbWLR1ySNI89vGNc12FFFpM954406f0901",
       authDomain: "tiffin-counter-3c051.firebaseapp.com",
@@ -97,7 +96,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Status Strip (Cloud + Printer) */
+    /* Status Strip */
     .status-strip {
       display: flex;
       justify-content: space-between;
@@ -316,43 +315,50 @@
     .item-list-row img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
     .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 
-    /* Modal Slip */
+    /* Thermal Receipt Paper Modal & Jagged Bottom */
     .modal { 
       display: none; 
       position: fixed; 
       inset: 0; 
-      background: rgba(0,0,0,0.75); 
-      backdrop-filter: blur(12px);
+      background: rgba(0,0,0,0.8); 
+      backdrop-filter: blur(14px);
       align-items: center; 
       justify-content: center; 
       padding: 16px; 
       z-index: 99; 
     }
-    .slip { 
-      background: #ffffff; 
+    .receipt-paper { 
+      background: #fafafa; 
       color: #111827; 
       width: 100%; 
       max-width: 320px; 
-      padding: 24px; 
-      border-radius: 20px; 
-      text-align: center; 
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      padding: 22px 16px 18px 16px; 
+      border-radius: 4px; 
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      line-height: 1.35;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+      position: relative;
     }
-    .slip .t-num { 
-      font-size: 3.2rem; 
-      font-weight: 900; 
-      color: #dc2626; 
-      margin: 8px 0; 
+    .receipt-paper::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: linear-gradient(135deg, transparent 5px, #fafafa 5px) 0 0,
+                  linear-gradient(-135deg, transparent 5px, #fafafa 5px) 0 0;
+      background-size: 10px 10px;
+      background-repeat: repeat-x;
     }
-    .slip-details { 
-      text-align: left; 
-      border-top: 2px dashed #d1d5db; 
-      border-bottom: 2px dashed #d1d5db; 
-      padding: 12px 0; 
-      margin: 12px 0; 
-      font-size: 1.05rem; 
-      font-weight: 600;
-    }
+    .receipt-center { text-align: center; }
+    .receipt-bold { font-weight: 900; }
+    .receipt-divider { border-top: 1px dashed #6b7280; margin: 8px 0; }
+    .receipt-row { display: flex; justify-content: space-between; }
+    .receipt-col-name { width: 44%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    .receipt-col-qty { width: 30%; text-align: center; }
+    .receipt-col-total { width: 26%; text-align: right; }
 
     /* Sales Register */
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -480,14 +486,25 @@
     </div>
   </div>
 
-  <!-- TOKEN POPUP -->
+  <!-- THERMAL RECEIPT PREVIEW MODAL -->
   <div class="modal" id="token-modal">
-    <div class="slip">
-      <h3 style="font-size: 1.2rem; color: #4b5563;" id="slip-shop-title">Sri Tiffin Center</h3>
-      <div class="t-num" id="print-token">#0</div>
-      <div class="slip-details" id="print-summary"></div>
-      <p style="font-size: 1.25rem; font-weight: 900; margin-bottom: 16px;">Total: ₹<span id="print-total">0</span></p>
-      <button class="btn-pay btn-cash" style="width: 100%; font-size: 1.15rem;" onclick="closeModal()">Next Order</button>
+    <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px;">
+      
+      <!-- Realistic Thermal Paper Preview -->
+      <div class="receipt-paper" id="receipt-preview-content">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="btn-pay btn-cash" style="padding: 12px; font-size: 1rem;" onclick="reprintCurrentToken()">
+          🖨️ Print Slip
+        </button>
+        <button class="btn-pay" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 12px; font-size: 1rem;" onclick="closeModal()">
+          Next Order
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -507,6 +524,9 @@
     let currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
     let cart = {};
     let printCharacteristic = null;
+
+    let lastOrderRecord = null;
+    let lastOrderItems = null;
 
     function init() {
       document.getElementById("display-shop-name").innerText = shopName;
@@ -559,284 +579,4 @@
     function addItem() {
       const name = document.getElementById("new-item-name").value.trim();
       const price = parseInt(document.getElementById("new-item-price").value, 10);
-      const fileInput = document.getElementById("new-item-file");
-      
-      if (!name || isNaN(price) || price <= 0) return alert("Enter valid item name and price.");
-
-      const saveItem = (imageData) => {
-        menu.push({ 
-          id: Date.now(), 
-          name, 
-          price, 
-          image: imageData || 'https://placehold.co/400x300?text=Tiffin' 
-        });
-        localStorage.setItem("pos_menu", JSON.stringify(menu));
-        document.getElementById("new-item-name").value = "";
-        document.getElementById("new-item-price").value = "";
-        fileInput.value = "";
-        renderPOSGrid();
-        renderManageMenu();
-      };
-
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => saveItem(e.target.result);
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        saveItem(null);
-      }
-    }
-
-    function deleteItem(id) {
-      menu = menu.filter(m => m.id !== id);
-      delete cart[id];
-      localStorage.setItem("pos_menu", JSON.stringify(menu));
-      renderPOSGrid();
-      renderManageMenu();
-    }
-
-    function restoreDefaultImages() {
-      if (confirm("Reset menu to default South Indian tiffins?")) {
-        menu = DEFAULT_MENU;
-        localStorage.setItem("pos_menu", JSON.stringify(menu));
-        renderPOSGrid();
-        renderManageMenu();
-      }
-    }
-
-    function renderManageMenu() {
-      const list = document.getElementById("manage-menu-list");
-      list.innerHTML = menu.map(m => `
-        <div class="item-list-row">
-          <div style="display:flex; align-items:center;">
-            <img src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
-            <div>
-              <strong>${m.name}</strong><br>
-              <small style="color:#4ade80; font-weight:bold;">₹${m.price}</small>
-            </div>
-          </div>
-          <button class="btn-delete" onclick="deleteItem(${m.id})">Remove</button>
-        </div>
-      `).join('');
-    }
-
-    // Real-Time Firebase Listener
-    window.initCloudListener = function() {
-      const today = new Date().toISOString().slice(0, 10);
-      const ordersCol = window.collection(window.db, "orders");
-      const q = window.query(ordersCol, window.orderBy("timestamp", "desc"));
-
-      window.onSnapshot(q, (snapshot) => {
-        document.getElementById("cloud-dot").classList.add("live");
-        document.getElementById("cloud-label").innerText = "Cloud: Live Synced";
-
-        cloudSales = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.date === today) {
-            cloudSales.push(data);
-          }
-        });
-
-        if (cloudSales.length > 0) {
-          const highestToken = Math.max(...cloudSales.map(s => s.token));
-          currentToken = highestToken + 1;
-        }
-        document.getElementById("next-token-id").innerText = currentToken;
-
-        renderSalesTable();
-      }, (error) => {
-        console.error("Firebase sync error:", error);
-        document.getElementById("cloud-label").innerText = "Cloud: Offline Mode";
-      });
-    };
-
-    async function generateToken(mode) {
-      const selected = menu.filter(m => (cart[m.id] || 0) > 0);
-      if (!selected.length) return alert("Please add at least one item.");
-
-      const total = parseInt(document.getElementById("pos-total").innerText, 10);
-      const itemsPurchased = selected.map(m => `${m.name} x${cart[m.id]}`);
-
-      const record = {
-        token: currentToken,
-        date: new Date().toISOString().slice(0, 10),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timestamp: Date.now(),
-        items: itemsPurchased.join(", "),
-        total: total,
-        mode: mode
-      };
-
-      // Show modal slip
-      document.getElementById("slip-shop-title").innerText = shopName;
-      document.getElementById("print-token").innerText = `#${currentToken}`;
-      document.getElementById("print-summary").innerHTML = selected.map(m => `<div>${m.name} x ${cart[m.id]} — ₹${m.price * cart[m.id]}</div>`).join('');
-      document.getElementById("print-total").innerText = total;
-      document.getElementById("token-modal").style.display = "flex";
-
-      // Auto Print via Bluetooth if paired
-      if (printCharacteristic) {
-        printThermalSlip(record, selected);
-      }
-
-      // Save to Firebase Cloud
-      if (window.db && window.addDoc) {
-        window.addDoc(window.collection(window.db, "orders"), record).catch(err => {
-          console.error("Local write queued:", err);
-        });
-      }
-
-      currentToken++;
-      localStorage.setItem("pos_token", currentToken);
-      document.getElementById("next-token-id").innerText = currentToken;
-
-      cart = {};
-      menu.forEach(m => {
-        const el = document.getElementById(`qty-${m.id}`);
-        if (el) el.innerText = "0";
-      });
-      document.getElementById("pos-total").innerText = "0";
-    }
-
-    function closeModal() {
-      document.getElementById("token-modal").style.display = "none";
-    }
-
-    function switchView(tab) {
-      document.getElementById("view-billing").style.display = tab === 'billing' ? 'block' : 'none';
-      document.getElementById("view-sales").style.display = tab === 'sales' ? 'block' : 'none';
-      document.getElementById("view-manage").style.display = tab === 'manage' ? 'block' : 'none';
-
-      document.getElementById("tab-billing").className = tab === 'billing' ? 'active' : '';
-      document.getElementById("tab-sales").className = tab === 'sales' ? 'active' : '';
-      document.getElementById("tab-manage").className = tab === 'manage' ? 'active' : '';
-
-      if (tab === 'sales') renderSalesTable();
-      if (tab === 'manage') renderManageMenu();
-    }
-
-    function renderSalesTable() {
-      const rows = document.getElementById("sales-rows");
-      const totalAmt = cloudSales.reduce((acc, s) => acc + s.total, 0);
-      const upiAmt = cloudSales.filter(s => s.mode === "UPI").reduce((acc, s) => acc + s.total, 0);
-
-      document.getElementById("stat-tokens").innerText = cloudSales.length;
-      document.getElementById("stat-upi").innerText = upiAmt;
-      document.getElementById("stat-total").innerText = totalAmt;
-
-      rows.innerHTML = cloudSales.map(s => `
-        <tr>
-          <td><strong>#${s.token}</strong><br><small style="color:#9ca3af;">${s.time}</small></td>
-          <td>${s.items}</td>
-          <td><span style="color:${s.mode === 'UPI' ? '#60a5fa' : '#4ade80'}; font-weight: bold;">${s.mode}</span></td>
-          <td><strong>₹${s.total}</strong></td>
-        </tr>
-      `).join('');
-    }
-
-    function exportToCSV() {
-      if (!cloudSales.length) return alert("No sales recorded yet.");
-      let csv = "Token,Date,Time,Items,Payment Mode,Total Amount\n";
-      cloudSales.forEach(s => {
-        csv += `"${s.token}","${s.date}","${s.time}","${s.items}","${s.mode}","${s.total}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `tiffin_sales_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-    }
-
-    function resetDay() {
-      if (confirm("Reset token counter to 1? Download the CSV first.")) {
-        currentToken = 1;
-        localStorage.setItem("pos_token", "1");
-        document.getElementById("next-token-id").innerText = "1";
-        alert("Token counter reset to #1 for the new day.");
-      }
-    }
-
-    // Bluetooth Thermal Printer Pairing
-    async function connectPrinter() {
-      if (!navigator.bluetooth) {
-        return alert("Web Bluetooth requires Google Chrome on Android.");
-      }
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [
-            "000018f0-0000-1000-8000-00805f9b34fb",
-            "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
-            "49535343-fe7d-4ae5-8fa9-9fafd205e455"
-          ]
-        });
-
-        const server = await device.gatt.connect();
-        const services = await server.getPrimaryServices();
-        
-        for (const service of services) {
-          const characteristics = await service.getCharacteristics();
-          for (const char of characteristics) {
-            if (char.properties.write || char.properties.writeWithoutResponse) {
-              printCharacteristic = char;
-              break;
-            }
-          }
-          if (printCharacteristic) break;
-        }
-
-        if (printCharacteristic) {
-          document.getElementById("printer-dot").classList.add("live");
-          document.getElementById("printer-label").innerText = `Printer: ${device.name || "Connected"}`;
-        }
-      } catch (err) {
-        alert("Printer connection failed: " + err.message);
-      }
-    }
-
-    async function printThermalSlip(record, selectedItems) {
-      try {
-        const encoder = new TextEncoder();
-        const ESC = "\x1B";
-        const GS = "\x1D";
-
-        let receipt = ESC + "@";
-        receipt += ESC + "a" + "\x01";
-        receipt += shopName + "\n";
-        receipt += GS + "!" + "\x11";
-        receipt += `TOKEN #${record.token}\n`;
-        receipt += GS + "!" + "\x00";
-        receipt += `${record.time} | Pay: ${record.mode}\n`;
-        receipt += "--------------------------------\n";
-        receipt += ESC + "a" + "\x00";
-
-        selectedItems.forEach(item => {
-          const qty = cart[item.id];
-          const line = `${item.name} x${qty}`;
-          const amt = `Rs.${item.price * qty}`;
-          const spaceCount = Math.max(1, 32 - (line.length + amt.length));
-          receipt += line + " ".repeat(spaceCount) + amt + "\n";
-        });
-
-        receipt += "--------------------------------\n";
-        receipt += ESC + "a" + "\x02";
-        receipt += `TOTAL: Rs.${record.total}\n\n`;
-        receipt += ESC + "a" + "\x01";
-        receipt += "Thank You! Visit Again\n\n\n\n";
-
-        const data = encoder.encode(receipt);
-        await printCharacteristic.writeValue(data);
-      } catch (err) {
-        console.error("Thermal printing error:", err);
-      }
-    }
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
-
-    init();
-  </script>
-</body>
-</html>
+    
