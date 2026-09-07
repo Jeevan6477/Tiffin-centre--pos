@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#991b1b" />
 
-  <!-- Firebase Compat SDK -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -17,7 +17,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
       margin: 0; 
       padding: 0; 
-      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
     }
 
     body { 
@@ -26,12 +26,11 @@
       padding: 12px; 
       padding-bottom: 140px; 
       min-height: 100vh;
+      position: relative;
     }
 
     header { 
       background: linear-gradient(135deg, rgba(220, 38, 38, 0.85) 0%, rgba(153, 27, 27, 0.65) 100%);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 16px; 
       padding: 14px 18px; 
@@ -42,7 +41,7 @@
       box-shadow: 0 8px 32px rgba(220, 38, 38, 0.3);
     }
     
-    header h1 { font-size: 1.35rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    header h1 { font-size: 1.35rem; font-weight: 800; }
     .token-badge { 
       background: linear-gradient(180deg, #ffffff, #fee2e2);
       color: #991b1b; 
@@ -50,10 +49,9 @@
       border-radius: 30px; 
       font-weight: 900; 
       font-size: 1rem; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Status Strip */
+    /* Status Bar */
     .status-strip {
       display: flex;
       justify-content: space-between;
@@ -65,23 +63,23 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      font-size: 0.8rem;
-      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 0.85rem;
+      font-weight: 700;
       color: #e5e7eb;
       cursor: pointer;
     }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
     .status-dot.live { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
 
-    /* Navigation Tabs */
+    /* Nav Tabs */
     .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .nav-tabs button { 
       flex: 1; 
-      padding: 10px 4px; 
+      padding: 12px 4px; 
       border-radius: 12px; 
       font-weight: 700; 
       font-size: 0.95rem; 
@@ -89,7 +87,6 @@
       background: rgba(255, 255, 255, 0.08); 
       color: #d1d5db; 
       border: 1px solid rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(10px);
     }
     .nav-tabs button.active { 
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(185, 28, 28, 0.7) 100%);
@@ -98,30 +95,28 @@
       box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
     }
 
-    /* Menu Grid */
+    /* Menu Cards */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
     .card { 
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border-radius: 16px; 
       overflow: hidden; 
       border: 1px solid rgba(255, 255, 255, 0.18); 
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       display: flex; 
       flex-direction: column; 
     }
-    .card-img-container { width: 100%; height: 110px; overflow: hidden; position: relative; }
+    .card-img-container { width: 100%; height: 110px; overflow: hidden; background: #222; }
     .card-img { width: 100%; height: 100%; object-fit: cover; }
     .card-body { padding: 12px 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
-    .card h4 { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 4px; line-height: 1.2; }
-    .card .price { color: #4ade80; font-weight: 800; font-size: 1.25rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(74, 222, 128, 0.4); }
-    .controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .card h4 { font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-bottom: 4px; }
+    .card .price { color: #4ade80; font-weight: 800; font-size: 1.25rem; margin-bottom: 10px; }
+    
+    .controls { display: flex; justify-content: center; align-items: center; gap: 12px; }
     .btn-qty { 
-      width: 40px; 
-      height: 40px; 
+      width: 44px; 
+      height: 44px; 
       background: rgba(255, 255, 255, 0.2); 
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3); 
       border-radius: 10px; 
       color: #ffffff; 
       font-weight: 800; 
@@ -138,57 +133,56 @@
     .checkout-panel { 
       position: fixed; 
       bottom: 0; left: 0; right: 0; 
-      background: linear-gradient(180deg, rgba(30, 10, 10, 0.94) 0%, rgba(15, 3, 3, 0.98) 100%);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(15, 3, 3, 0.96);
       border-top: 1px solid rgba(255, 255, 255, 0.2); 
       padding: 12px 16px; 
       box-shadow: 0 -8px 30px rgba(0,0,0,0.6); 
-      z-index: 50; 
+      z-index: 10; 
     }
     .total-row { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; color: #ffffff; }
-    .total-row span:last-child { color: #4ade80; text-shadow: 0 0 12px rgba(74, 222, 128, 0.4); }
+    .total-row span:last-child { color: #4ade80; }
     .actions { display: flex; gap: 10px; }
     .btn-pay { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 800; color: white; cursor: pointer; }
     .btn-pay:active { transform: scale(0.96); }
-    .btn-cash { background: linear-gradient(145deg, #22c55e 0%, #15803d 100%); border: 1px solid rgba(255,255,255,0.3); }
-    .btn-upi { background: linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%); border: 1px solid rgba(255,255,255,0.3); }
+    .btn-cash { background: #16a34a; }
+    .btn-upi { background: #2563eb; }
 
-    /* Settings & Menu Cards */
+    /* Manage Menu Settings */
     .section-card { 
       background: rgba(255, 255, 255, 0.08); 
-      backdrop-filter: blur(16px);
       border-radius: 14px; 
       padding: 16px; 
       border: 1px solid rgba(255, 255, 255, 0.15); 
       margin-bottom: 14px; 
     }
-    .section-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: #ffffff; font-weight: 700; }
+    .section-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: #ffffff; }
     .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
-    .form-group input { padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 1rem; background: rgba(0,0,0,0.3); color: white; }
-    .btn-action { background: linear-gradient(145deg, #dc2626 0%, #991b1b 100%); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+    .form-group input { padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 1rem; background: rgba(0,0,0,0.4); color: white; }
+    .btn-action { background: #dc2626; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
     .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
     .item-list-row img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
-    .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+    .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    /* Thermal Receipt Modal & Jagged Bottom */
-    .modal { 
+    /* Modal - Strictly Hidden by Default */
+    .modal-backdrop { 
       display: none; 
       position: fixed; 
       inset: 0; 
       background: rgba(0,0,0,0.85); 
-      backdrop-filter: blur(14px);
       align-items: center; 
       justify-content: center; 
       padding: 16px; 
-      z-index: 99; 
+      z-index: 1000; 
+    }
+    .modal-backdrop.open {
+      display: flex !important;
     }
     .receipt-paper { 
       background: #fafafa; 
       color: #111827; 
       width: 100%; 
       max-width: 320px; 
-      padding: 22px 16px 18px 16px; 
+      padding: 20px 16px; 
       border-radius: 4px; 
       font-family: "Courier New", Courier, monospace;
       font-size: 0.85rem;
@@ -200,8 +194,7 @@
       content: "";
       position: absolute;
       bottom: -10px;
-      left: 0;
-      right: 0;
+      left: 0; right: 0;
       height: 10px;
       background: linear-gradient(135deg, transparent 5px, #fafafa 5px) 0 0,
                   linear-gradient(-135deg, transparent 5px, #fafafa 5px) 0 0;
@@ -216,16 +209,16 @@
     .receipt-col-qty { width: 30%; text-align: center; }
     .receipt-col-total { width: 26%; text-align: right; }
 
-    /* Sales Register */
+    /* Sales View */
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-    .metric { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px 6px; border-radius: 12px; text-align: center; }
+    .metric { background: rgba(255, 255, 255, 0.08); padding: 12px 6px; border-radius: 12px; text-align: center; }
     .metric span { display: block; font-size: 0.9rem; color: #9ca3af; margin-bottom: 4px; }
     .metric strong { font-size: 1.25rem; color: #ffffff; font-weight: 900; }
-    .table-container { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(16px); border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.15); overflow: hidden; }
+    .table-container { background: rgba(255, 255, 255, 0.06); border-radius: 14px; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
     th { background: rgba(255, 255, 255, 0.1); font-weight: 700; color: #e5e7eb; }
-    .btn-export { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 14px; border-radius: 12px; width: 100%; font-size: 1rem; font-weight: 800; margin-top: 12px; cursor: pointer; }
+    .btn-export { background: rgba(255,255,255,0.15); color: white; padding: 14px; border-radius: 12px; width: 100%; font-size: 1rem; font-weight: 800; margin-top: 12px; cursor: pointer; border: none; }
   </style>
 </head>
 <body>
@@ -236,7 +229,7 @@
   </header>
 
   <div class="status-strip">
-    <div class="status-pill" onclick="checkCloudConnection()">
+    <div class="status-pill" onclick="alert(db ? 'Cloud is connected and active!' : 'Running in Offline Storage mode')">
       <span class="status-dot" id="cloud-dot"></span>
       <span id="cloud-label">Cloud: Local</span>
     </div>
@@ -285,10 +278,10 @@
     </div>
 
     <button class="btn-export" onclick="exportToCSV()">Download Sales (CSV)</button>
-    <button class="btn-export" style="background: linear-gradient(145deg, #b91c1c 0%, #7f1d1d 100%); margin-top:8px;" onclick="resetDay()">Reset for New Day</button>
+    <button class="btn-export" style="background: #b91c1c; margin-top:8px;" onclick="resetDay()">Reset Day Counter</button>
   </div>
 
-  <!-- 3. MANAGE MENU VIEW -->
+  <!-- 3. MANAGE VIEW -->
   <div id="view-manage" style="display: none;">
     <div class="section-card">
       <h3>Shop Name</h3>
@@ -301,9 +294,9 @@
     <div class="section-card">
       <h3>Add New Menu Item</h3>
       <div class="form-group">
-        <input type="text" id="new-item-name" placeholder="Item Name (e.g. Mysore Bonda)" />
+        <input type="text" id="new-item-name" placeholder="Item Name (e.g. Bonda)" />
         <input type="number" id="new-item-price" placeholder="Price (₹)" />
-        <label style="font-size: 0.85rem; color: #d1d5db;">Upload Item Image:</label>
+        <label style="font-size: 0.85rem; color: #d1d5db;">Upload Photo:</label>
         <input type="file" id="new-item-file" accept="image/*" />
         <button class="btn-action" style="margin-top: 4px;" onclick="addItem()">Add to Menu</button>
       </div>
@@ -312,20 +305,16 @@
     <div class="section-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3>Current Menu</h3>
-        <button onclick="restoreDefaultItems()" style="font-size: 0.75rem; background: rgba(255,255,255,0.15); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Reset Defaults</button>
+        <button onclick="restoreDefaultItems()" style="font-size: 0.75rem; background: rgba(255,255,255,0.2); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Reset Defaults</button>
       </div>
       <div id="manage-menu-list"></div>
     </div>
   </div>
 
-  <!-- THERMAL RECEIPT PREVIEW MODAL -->
-  <div class="modal" id="token-modal">
-    <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px;">
-      
-      <!-- Monospaced Thermal Slip Preview -->
+  <!-- THERMAL RECEIPT MODAL PREVIEW -->
+  <div class="modal-backdrop" id="token-modal" onclick="closeModalOnBackdrop(event)">
+    <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px;" onclick="event.stopPropagation()">
       <div class="receipt-paper" id="receipt-preview-content"></div>
-
-      <!-- Action Buttons -->
       <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button class="btn-pay btn-cash" style="padding: 12px; font-size: 1rem;" onclick="reprintCurrentToken()">
           🖨️ Print Slip
@@ -334,7 +323,6 @@
           Next Order
         </button>
       </div>
-
     </div>
   </div>
 
@@ -366,7 +354,6 @@
       setupFirebase();
     }
 
-    // Initialize Firebase
     function setupFirebase() {
       try {
         if (typeof firebase !== 'undefined') {
@@ -384,9 +371,8 @@
           db = firebase.firestore();
 
           document.getElementById("cloud-dot").classList.add("live");
-          document.getElementById("cloud-label").innerText = "Cloud: Connected";
+          document.getElementById("cloud-label").innerText = "Cloud: Ready";
 
-          // Sync daily orders
           const today = new Date().toISOString().slice(0, 10);
           db.collection("orders").onSnapshot(snap => {
             let cloudOrders = [];
@@ -407,19 +393,10 @@
             }
           }, err => {
             console.warn("Firestore permissions note:", err.message);
-            document.getElementById("cloud-label").innerText = "Cloud: Local Only";
           });
         }
       } catch (err) {
-        console.warn("Cloud connection error:", err);
-      }
-    }
-
-    function checkCloudConnection() {
-      if (db) {
-        alert("Cloud database is connected and active.");
-      } else {
-        alert("Running locally in your phone storage. All sales and tokens are fully preserved.");
+        console.warn("Firebase offline note:", err);
       }
     }
 
@@ -434,9 +411,9 @@
             <h4>${m.name}</h4>
             <div class="price">₹${m.price}</div>
             <div class="controls">
-              <button class="btn-qty" onclick="changeQty(${m.id}, -1)">-</button>
+              <button class="btn-qty" type="button" onclick="changeQty(${m.id}, -1)">-</button>
               <span class="qty-number" id="qty-${m.id}">${cart[m.id] || 0}</span>
-              <button class="btn-qty" onclick="changeQty(${m.id}, 1)">+</button>
+              <button class="btn-qty" type="button" onclick="changeQty(${m.id}, 1)">+</button>
             </div>
           </div>
         </div>
@@ -461,9 +438,52 @@
       shopName = val;
       localStorage.setItem("pos_shop_name", shopName);
       document.getElementById("display-shop-name").innerText = shopName;
-      alert("Shop name updated successfully!");
+      alert("Shop name updated!");
     }
 
     function addItem() {
       const name = document.getElementById("new-item-name").value.trim();
-      const price = parseInt(document.getElementById("new-item-price").
+      const price = parseInt(document.getElementById("new-item-price").value, 10);
+      const fileInput = document.getElementById("new-item-file");
+      
+      if (!name || isNaN(price) || price <= 0) return alert("Enter valid item name and price.");
+
+      const save = (imgData) => {
+        menu.push({ id: Date.now(), name, price, image: imgData || '' });
+        localStorage.setItem("pos_menu", JSON.stringify(menu));
+        document.getElementById("new-item-name").value = "";
+        document.getElementById("new-item-price").value = "";
+        fileInput.value = "";
+        renderPOSGrid();
+        renderManageMenu();
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => save(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        save(null);
+      }
+    }
+
+    function deleteItem(id) {
+      menu = menu.filter(m => m.id !== id);
+      delete cart[id];
+      localStorage.setItem("pos_menu", JSON.stringify(menu));
+      renderPOSGrid();
+      renderManageMenu();
+    }
+
+    function restoreDefaultItems() {
+      if (confirm("Reset menu to default items?")) {
+        menu = DEFAULT_MENU;
+        localStorage.setItem("pos_menu", JSON.stringify(menu));
+        renderPOSGrid();
+        renderManageMenu();
+      }
+    }
+
+    function renderManageMenu() {
+      const list = document.getElementById("manage-menu-list");
+      list.innerHTML = menu
