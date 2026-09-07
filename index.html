@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Sri Tiffin POS</title>
-  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#991b1b" />
 
   <style>
@@ -14,11 +13,10 @@
       margin: 0; 
       padding: 0; 
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     body { 
-      background: radial-gradient(circle at 20% 20%, #2e0808 0%, #120303 50%, #080202 100%);
+      background: #180505;
       color: #f3f4f6;
       padding: 12px; 
       padding-bottom: 140px; 
@@ -26,20 +24,19 @@
     }
 
     header { 
-      background: linear-gradient(135deg, rgba(220, 38, 38, 0.85) 0%, rgba(153, 27, 27, 0.65) 100%);
+      background: #991b1b;
       border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 16px; 
+      border-radius: 14px; 
       padding: 14px 18px; 
-      margin-bottom: 10px; 
+      margin-bottom: 12px; 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      box-shadow: 0 8px 32px rgba(220, 38, 38, 0.3);
     }
     
-    header h1 { font-size: 1.35rem; font-weight: 800; }
+    header h1 { font-size: 1.35rem; font-weight: 800; color: #fff; }
     .token-badge { 
-      background: linear-gradient(180deg, #ffffff, #fee2e2);
+      background: #ffffff;
       color: #991b1b; 
       padding: 6px 14px; 
       border-radius: 30px; 
@@ -67,7 +64,7 @@
       color: #e5e7eb;
       cursor: pointer;
     }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 
     .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .nav-tabs button { 
@@ -82,24 +79,40 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
     .nav-tabs button.active { 
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(185, 28, 28, 0.7) 100%);
+      background: #dc2626;
       color: #ffffff; 
       border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
     }
 
-    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+    /* POS Item Grid */
+    .menu-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 12px; 
+      margin-bottom: 16px; 
+    }
     .card { 
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 16px; 
       overflow: hidden; 
-      border: 1px solid rgba(255, 255, 255, 0.18); 
+      border: 1px solid rgba(255, 255, 255, 0.15); 
       display: flex; 
       flex-direction: column; 
     }
-    .card-img-container { width: 100%; height: 110px; overflow: hidden; background: #222; }
-    .card-img { width: 100%; height: 100%; object-fit: cover; }
-    .card-body { padding: 12px 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+    .card-img { 
+      width: 100%; 
+      height: 100px; 
+      object-fit: cover; 
+      background: #2b0b0b;
+    }
+    .card-body { 
+      padding: 12px 8px; 
+      text-align: center; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      flex: 1; 
+    }
     .card h4 { font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-bottom: 4px; }
     .card .price { color: #4ade80; font-weight: 800; font-size: 1.25rem; margin-bottom: 10px; }
     
@@ -107,27 +120,27 @@
     .btn-qty { 
       width: 44px; 
       height: 44px; 
-      background: rgba(255, 255, 255, 0.2); 
-      border: 1px solid rgba(255, 255, 255, 0.3); 
+      background: rgba(255, 255, 255, 0.25); 
+      border: 1px solid rgba(255, 255, 255, 0.4); 
       border-radius: 10px; 
       color: #ffffff; 
-      font-weight: 800; 
-      font-size: 1.4rem; 
+      font-weight: 900; 
+      font-size: 1.5rem; 
       cursor: pointer; 
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .btn-qty:active { transform: scale(0.92); background: rgba(255,255,255,0.4); }
+    .btn-qty:active { background: rgba(255, 255, 255, 0.5); transform: scale(0.92); }
     .qty-number { font-size: 1.35rem; font-weight: 900; min-width: 24px; color: #ffffff; }
 
+    /* Fixed Checkout Footer */
     .checkout-panel { 
       position: fixed; 
       bottom: 0; left: 0; right: 0; 
-      background: rgba(15, 3, 3, 0.96);
-      border-top: 1px solid rgba(255, 255, 255, 0.2); 
+      background: #0f0303;
+      border-top: 1px solid rgba(255, 255, 255, 0.25); 
       padding: 12px 16px; 
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.6); 
       z-index: 10; 
     }
     .total-row { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; color: #ffffff; }
@@ -138,6 +151,7 @@
     .btn-cash { background: #16a34a; }
     .btn-upi { background: #2563eb; }
 
+    /* Manage Menu Settings */
     .section-card { 
       background: rgba(255, 255, 255, 0.08); 
       border-radius: 14px; 
@@ -150,10 +164,9 @@
     .form-group input { padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 1rem; background: rgba(0,0,0,0.4); color: white; }
     .btn-action { background: #dc2626; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
     .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-    .item-list-row img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
     .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    /* Modal - Zero Display When Inactive */
+    /* Monospaced Thermal Slip Modal */
     #token-modal { 
       display: none; 
       position: fixed; 
@@ -162,7 +175,7 @@
       align-items: center; 
       justify-content: center; 
       padding: 16px; 
-      z-index: 9999; 
+      z-index: 999; 
     }
     .receipt-paper { 
       background: #fafafa; 
@@ -196,6 +209,7 @@
     .receipt-col-qty { width: 30%; text-align: center; }
     .receipt-col-total { width: 26%; text-align: right; }
 
+    /* Sales Register */
     .sales-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .metric { background: rgba(255, 255, 255, 0.08); padding: 12px 6px; border-radius: 12px; text-align: center; }
     .metric span { display: block; font-size: 0.9rem; color: #9ca3af; margin-bottom: 4px; }
@@ -220,7 +234,7 @@
       <span>Storage: Active</span>
     </div>
     <div class="status-pill" onclick="connectPrinter()">
-      <span class="status-dot" id="printer-dot" style="background:#9ca3af;box-shadow:none;"></span>
+      <span class="status-dot" id="printer-dot" style="background:#9ca3af;"></span>
       <span id="printer-label">Printer: Connect</span>
     </div>
   </div>
@@ -240,8 +254,8 @@
         <span>₹<span id="pos-total">0</span></span>
       </div>
       <div class="actions">
-        <button class="btn-pay btn-cash" onclick="generateToken('Cash')">Cash Pay</button>
-        <button class="btn-pay btn-upi" onclick="generateToken('UPI')">UPI Pay</button>
+        <button class="btn-pay btn-cash" type="button" onclick="generateToken('Cash')">Cash Pay</button>
+        <button class="btn-pay btn-upi" type="button" onclick="generateToken('UPI')">UPI Pay</button>
       </div>
     </div>
   </div>
@@ -291,7 +305,7 @@
     <div class="section-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3>Current Menu</h3>
-        <button onclick="restoreDefaultItems()" style="font-size: 0.75rem; background: rgba(255,255,255,0.2); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Reset Defaults</button>
+        <button onclick="restoreDefaults()" style="font-size: 0.75rem; background: rgba(255,255,255,0.2); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Reset Defaults</button>
       </div>
       <div id="manage-menu-list"></div>
     </div>
@@ -313,7 +327,8 @@
   </div>
 
   <script>
-    const DEFAULT_MENU = [
+    // Fail-safe default menu
+    const DEFAULT_ITEMS = [
       { id: 1, name: "Idli (4)", price: 40, image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=80" },
       { id: 2, name: "Wada (2)", price: 45, image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=400&auto=format&fit=crop&q=80" },
       { id: 3, name: "Masala Dosa", price: 55, image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400&auto=format&fit=crop&q=80" },
@@ -322,45 +337,61 @@
       { id: 6, name: "Filter Coffee", price: 20, image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=80" }
     ];
 
-    let shopName = localStorage.getItem("pos_shop_name") || "Sri Tiffin POS";
-    let menu = JSON.parse(localStorage.getItem("pos_menu")) || DEFAULT_MENU;
-    let localSales = JSON.parse(localStorage.getItem("pos_sales")) || [];
-    let currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
+    let shopName = "Sri Tiffin POS";
+    let menu = DEFAULT_ITEMS;
+    let localSales = [];
+    let currentToken = 1;
     let cart = {};
     let printCharacteristic = null;
     let lastOrderRecord = null;
     let lastOrderItems = null;
 
-    // Direct synchronous render - will NEVER get stuck on blank screen
+    // Load state safely
+    try {
+      shopName = localStorage.getItem("pos_shop_name") || "Sri Tiffin POS";
+      const savedMenu = localStorage.getItem("pos_menu");
+      if (savedMenu) menu = JSON.parse(savedMenu);
+      const savedSales = localStorage.getItem("pos_sales");
+      if (savedSales) localSales = JSON.parse(savedSales);
+      currentToken = parseInt(localStorage.getItem("pos_token") || "1", 10);
+    } catch (e) {
+      console.warn("Storage reset due to corrupted state:", e);
+      localStorage.clear();
+      menu = DEFAULT_ITEMS;
+    }
+
+    // Render POS Grid immediately
     document.getElementById("display-shop-name").innerText = shopName;
     document.getElementById("input-shop-name").value = shopName;
     document.getElementById("next-token-id").innerText = currentToken;
-    renderPOSGrid();
 
     function renderPOSGrid() {
       const grid = document.getElementById("menu-container");
-      grid.innerHTML = menu.map(m => `
-        <div class="card">
-          <div class="card-img-container">
-            <img class="card-img" src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
-          </div>
+      grid.innerHTML = "";
+      menu.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img class="card-img" src="${item.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${item.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
           <div class="card-body">
-            <h4>${m.name}</h4>
-            <div class="price">₹${m.price}</div>
+            <h4>${item.name}</h4>
+            <div class="price">₹${item.price}</div>
             <div class="controls">
-              <button class="btn-qty" type="button" onclick="changeQty(${m.id}, -1)">-</button>
-              <span class="qty-number" id="qty-${m.id}">${cart[m.id] || 0}</span>
-              <button class="btn-qty" type="button" onclick="changeQty(${m.id}, 1)">+</button>
+              <button class="btn-qty" type="button" onclick="changeQty(${item.id}, -1)">-</button>
+              <span class="qty-number" id="qty-${item.id}">${cart[item.id] || 0}</span>
+              <button class="btn-qty" type="button" onclick="changeQty(${item.id}, 1)">+</button>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+        grid.appendChild(div);
+      });
     }
 
     function changeQty(id, delta) {
       cart[id] = Math.max(0, (cart[id] || 0) + delta);
       const el = document.getElementById(`qty-${id}`);
       if (el) el.innerText = cart[id];
+      
       let total = 0;
       for (let itemId in cart) {
         const item = menu.find(m => m.id == itemId);
@@ -369,77 +400,12 @@
       document.getElementById("pos-total").innerText = total;
     }
 
-    function updateShopName() {
-      const val = document.getElementById("input-shop-name").value.trim();
-      if (!val) return;
-      shopName = val;
-      localStorage.setItem("pos_shop_name", shopName);
-      document.getElementById("display-shop-name").innerText = shopName;
-      alert("Shop name updated!");
-    }
-
-    function addItem() {
-      const name = document.getElementById("new-item-name").value.trim();
-      const price = parseInt(document.getElementById("new-item-price").value, 10);
-      const fileInput = document.getElementById("new-item-file");
-      
-      if (!name || isNaN(price) || price <= 0) return alert("Enter valid item name and price.");
-
-      const save = (imgData) => {
-        menu.push({ id: Date.now(), name, price, image: imgData || '' });
-        localStorage.setItem("pos_menu", JSON.stringify(menu));
-        document.getElementById("new-item-name").value = "";
-        document.getElementById("new-item-price").value = "";
-        fileInput.value = "";
-        renderPOSGrid();
-        renderManageMenu();
-      };
-
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => save(e.target.result);
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        save(null);
-      }
-    }
-
-    function deleteItem(id) {
-      menu = menu.filter(m => m.id !== id);
-      delete cart[id];
-      localStorage.setItem("pos_menu", JSON.stringify(menu));
-      renderPOSGrid();
-      renderManageMenu();
-    }
-
-    function restoreDefaultItems() {
-      if (confirm("Reset menu to default items?")) {
-        menu = DEFAULT_MENU;
-        localStorage.setItem("pos_menu", JSON.stringify(menu));
-        renderPOSGrid();
-        renderManageMenu();
-      }
-    }
-
-    function renderManageMenu() {
-      const list = document.getElementById("manage-menu-list");
-      list.innerHTML = menu.map(m => `
-        <div class="item-list-row">
-          <div style="display:flex; align-items:center;">
-            <img src="${m.image || 'https://placehold.co/400x300?text=Tiffin'}" alt="${m.name}" onerror="this.src='https://placehold.co/400x300?text=Tiffin'" />
-            <div>
-              <strong>${m.name}</strong><br>
-              <small style="color:#4ade80; font-weight:bold;">₹${m.price}</small>
-            </div>
-          </div>
-          <button class="btn-delete" onclick="deleteItem(${m.id})">Remove</button>
-        </div>
-      `).join('');
-    }
-
     function generateToken(mode) {
       const selected = menu.filter(m => (cart[m.id] || 0) > 0);
-      if (!selected.length) return alert("Please select at least one item.");
+      if (!selected.length) {
+        alert("Please add at least one item!");
+        return;
+      }
 
       const total = parseInt(document.getElementById("pos-total").innerText, 10);
       const itemsPurchased = selected.map(m => `${m.name} x${cart[m.id]}`);
@@ -447,10 +413,8 @@
 
       const record = {
         token: currentToken,
-        isoDate: new Date().toISOString().slice(0, 10),
         date: todayFormatted,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timestamp: Date.now(),
         items: itemsPurchased.join(", "),
         total: total,
         mode: mode
@@ -467,7 +431,7 @@
         subTotal: m.price * cart[m.id]
       }));
 
-      // Render accurate in-app paper receipt preview
+      // Show paper receipt preview
       renderReceiptPreview(record, lastOrderItems);
       document.getElementById("token-modal").style.display = "flex";
 
@@ -487,4 +451,71 @@
       document.getElementById("pos-total").innerText = "0";
     }
 
-    
+    function renderReceiptPreview(record, items) {
+      const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
+
+      const itemsHtml = items.map(item => `
+        <div class="receipt-row">
+          <span class="receipt-col-name">${item.name}</span>
+          <span class="receipt-col-qty">${item.qty}/${item.price.toFixed(2)}</span>
+          <span class="receipt-col-total">${item.subTotal.toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById("receipt-preview-content").innerHTML = `
+        <div class="receipt-center receipt-bold" style="font-size: 1.15rem;">${shopName}</div>
+        <div class="receipt-center" style="font-size: 0.75rem; color: #4b5563;">Main Road, Near Bus Stand</div>
+        <div class="receipt-center" style="font-size: 0.75rem; color: #4b5563;">Phone: 9876543210</div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div style="font-size: 0.8rem;">Bill To: ${record.mode} Sale</div>
+        <div class="receipt-row" style="font-size: 0.8rem;">
+          <span>Bill No: ${record.token}</span>
+          <span>Date: ${record.date}</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-row receipt-bold">
+          <span class="receipt-col-name">Item Name</span>
+          <span class="receipt-col-qty">Qty/Rate</span>
+          <span class="receipt-col-total">Total</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        ${itemsHtml}
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-row">
+          <span>Total Qty: ${totalQty}</span>
+          <span>Sub Total: ${record.total.toFixed(2)}</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-center receipt-bold" style="font-size: 1.1rem; margin: 4px 0;">
+          Grand Total ${record.total.toFixed(2)}
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-center" style="font-size: 0.78rem; margin-top: 4px;">
+          Thank you for ordering!<br>Please visit again.
+        </div>
+        <div class="receipt-center" style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;">
+          Powered by ${shopName}
+        </div>
+      `;
+    }
+
+    async function reprintCurrentToken() {
+      if (!printCharacteristic) {
+        alert("Printer not connected! Tap 'Printer: Connect' at the top first.");
+        return;
+      }
+      if (lastOrderRecord && lastOrderItems) {
+        await printThermalSlip(lastOrderRecord, lastOrderItems);
+      
